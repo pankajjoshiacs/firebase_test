@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+	</head>
+
+	<body>
+		<div id="chat"></div>
+		<input type="text" id="name" placeholder="Name">
+		<input type="text" id="message" placeholder="Message">
+		<script>
+			var myDataRef = new Firebase('https://vv6kh0mj3js.firebaseio-demo.com/');
+			$('#message').keypress(function(e) {
+				if(e.keyCode == 13) {
+					var usr = $('#name').val();
+					var msg = $('#message').val();
+					//myDataRef.set('User' + usr + ' says' + msg);
+					//myDataRef.set({name:usr, text:msg});
+					var newData = myDataRef.push({name:usr, text:msg});
+					$('#message').val('');
+				}
+			});
+
+			myDataRef.on('value', function(snapshot) {
+				var chatInfo = snapshot.val()
+				console.log(chatInfo);
+				//console.log(chatInfo.name); output will be undefine in this case.
+				//console.log(chatInfo.key);
+			}, function(errorObject) {
+				console.log("Read failed: ", errorObject.code);
+			});
+
+			myDataRef.limitToLast(5).on('child_added', function(snapshot){
+				var chatInfo = snapshot.val();
+				console.log(chatInfo);
+			});
+
+			//Complex Queries
+			var ref = new Firebase("https://dinosaur-facts.firebaseio.com/dinosaurs");
+			ref.orderByChild("weight").limitToLast(2).on("child_added", function(snapshot) {
+			  console.log(snapshot.key());
+			});
+			ref.orderByChild("height").limitToFirst(2).on("child_added", function(snapshot) {
+			  console.log(snapshot.key());
+			});
+			ref.orderByKey().startAt("b").endAt("b~").on("child_added", function(snapshot) {
+			  console.log(snapshot.key());
+			});
+			ref.orderByKey().endAt("pterodactyl").on("child_added", function(snapshot) {
+			  console.log(snapshot.key());
+			});
+			ref.orderByChild("height").startAt(3).on("child_added", function(snapshot) {
+			  console.log(snapshot.key())
+			});
+			ref.orderByChild("height").equalTo(25).on("child_added", function(snapshot) {
+			  console.log(snapshot.key());
+			});
+
+			var scoresRef = new Firebase("https://dinosaur-facts.firebaseio.com/scores");
+			scoresRef.orderByValue().limitToLast(3).on("value", function(snapshot) {
+			  snapshot.forEach(function(data) {
+			    console.log("The " + data.key() + " dinosaur's score is " + data.val());
+			  });
+			});
+
+			myDataRef.on('child_added', function(snapshot){
+				var chatInfo = snapshot.val();
+				displayChatMessage(chatInfo.name, chatInfo.text);
+			});
+			function displayChatMessage(name, text) {
+				$('<div>').text(text).prepend($('<em/>').text(name+':')).appendTo($('#chat'));
+				$('#chat')[0].scrollTop = $('#chat')[0].scrollHeight;
+			};
+		</script>
+	</body>
+</html>

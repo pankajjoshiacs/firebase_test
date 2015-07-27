@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+	</head>
+
+	<body>
+		<div> 
+			<table id="ladderboard">
+				<tr>
+					<th>Name</th>
+					<th>Score</th>
+				</tr>
+			</table>
+			<footer>
+				<input type="text" id="name" placeholder="Enter a name">
+				<input type="text" id="score" placeholder="Record your score">
+			</footer>
+		</div>
+		<script>
+			var myDataAppRef = new Firebase("https://blazing-inferno-8779.firebaseio.com");
+			/* creating user 
+			myDataAppRef.createUser({
+				email	 : "pankaj.joshi.jpy@gmail.com",
+				password : "pax143bhanu"
+			}, function(error, userData) {
+				if (error) {
+					console.log("Error in creating user:", error);
+				} else {
+					console.log("Successfully created user account with uid:", userData.uid);
+				}
+			});*/
+			myDataAppRef.authWithPassword({
+				email	 : "pankaj.joshi.jpy@gmail.com",
+				password : "pax143bhanu"
+			}, function(error, authData) {
+				if (error) {
+					console.log("Login failed:", error);
+				} else {
+					console.log("Authenticated successfully with the payload: ", authData);
+				}
+			});
+			//Way 1
+			var userData = myDataAppRef.child("users");
+			/*userData.set({
+				1001: {
+					name: "Pankaj Joshi",
+					age: 34
+				},
+				1002: {
+					name: "Kailash Joshi",
+					age: 34
+				}
+			});*/
+			//Way 2
+			userData.child('1001').set({
+				name: 'Pankaj',
+				age: 33
+			});
+			userData.child('1002').set({
+				name: 'Kailash',
+				age: 33
+			});
+			userData.orderByKey().on('value', function(snapshot) {
+				var chatInfo = snapshot.val()
+				console.log(chatInfo);
+			});
+			userData.orderByChild('name').on('child_added', function(snapshot) {
+				var addedChat = snapshot.val()
+				console.log(addedChat.name + ": " + addedChat.age);
+			});
+			myDataAppRef.on('child_changed', function(snapshot) {
+				var updatedChat = snapshot.val()
+				console.log(updatedChat);
+			});
+			myDataAppRef.on('child_removed', function(snapshot) {
+				var removedChat = snapshot.val()
+				console.log(removedChat);
+			});
+		</script>
+	</body>
+</html>
